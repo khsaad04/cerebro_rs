@@ -37,3 +37,32 @@ pub async fn avatar(
     .await?;
     Ok(())
 }
+
+/// Show's the user's info
+#[poise::command(prefix_command, slash_command)]
+pub async fn userinfo(
+    ctx: Context<'_>,
+    #[description = "The user whose info you want"]
+    #[autocomplete = "poise::builtins::autocomplete_command"]
+    member: Option<serenity::Member>,
+) -> Result<(), Error> {
+    let author = ctx.author_member().await.expect("Not a member");
+    let member = member.as_ref().unwrap_or(&author);
+    ctx.send(|msg| {
+        msg.embed(|em| {
+            em.title("User info")
+                .description(format!("{}'s user info", member.user.name))
+                .thumbnail(member.user.avatar_url().expect("No avatar found"))
+                .field("ID", member.user.id, true)
+                .field(
+                    "Nickname",
+                    member.clone().nick.unwrap_or("None".into()),
+                    true,
+                )
+                .field("Account created", member.user.created_at(), false)
+                .field("Joined server", member.joined_at.unwrap(), false)
+        })
+    })
+    .await?;
+    Ok(())
+}
