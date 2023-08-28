@@ -23,14 +23,15 @@ pub async fn avatar(
     ctx: Context<'_>,
     #[description = "The user whose avatar you want"]
     #[autocomplete = "poise::builtins::autocomplete_command"]
-    member: Option<serenity::User>,
+    member: Option<serenity::Member>,
 ) -> Result<(), Error> {
-    let member = member.as_ref().unwrap_or_else(|| ctx.author());
+    let author = ctx.author_member().await.expect("Not a member");
+    let member = member.as_ref().unwrap_or(&author);
     ctx.send(|msg| {
         msg.embed(|em| {
             em.title("Avatar")
-                .description(format!("{}'s avatar", member.name))
-                .image(member.avatar_url().unwrap())
+                .description(format!("{}'s avatar", member.user.name))
+                .image(member.user.avatar_url().expect("No image found"))
         })
     })
     .await?;
