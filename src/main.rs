@@ -46,6 +46,8 @@ async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> Shuttle
                 commands::moderation::kick(),
                 commands::moderation::ban(),
                 commands::moderation::unban(),
+                commands::moderation::mute(),
+                commands::moderation::unmute(),
             ],
             on_error: |error| Box::pin(on_error(error)),
             ..Default::default()
