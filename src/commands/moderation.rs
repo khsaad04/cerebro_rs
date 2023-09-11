@@ -2,29 +2,52 @@ use poise::serenity_prelude::{self as serenity, Color, Timestamp};
 
 use crate::{Context, Error};
 
-enum Duration {
-    Seconds(i64),
-    Minutes(i64),
-    Hours(i64),
-    Days(i64),
+struct Duration {
+    amount: i64,
+    unit: String,
 }
 
-impl From<String> for Duration {
-    fn from(input: String) -> Self {
+impl TryFrom<String> for Duration {
+    type Error = String;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
         let mut i = 0;
-        for (idx, c) in input.chars().enumerate() {
+        for (idx, c) in value.chars().enumerate() {
             if !c.is_numeric() {
                 i += idx;
                 break;
             }
         }
-        let (amount, unit) = input.split_at(i);
-        match unit {
-            "s" | "sec" => Self::Seconds(amount.parse::<i64>().unwrap()),
-            "m" | "min" => Self::Minutes(amount.parse::<i64>().unwrap() * 60),
-            "h" | "hr" | "hour" => Self::Hours(amount.parse::<i64>().unwrap() * 60 * 60),
-            "d" | "day" => Self::Days(amount.parse::<i64>().unwrap() * 3600 * 24),
-            _ => Self::Seconds(0),
+        let (amount, unit) = value.split_at(i);
+        Ok(Self {
+            amount: amount.parse::<i64>().unwrap(),
+            unit: unit.to_string(),
+        })
+    }
+}
+
+enum DurationType {
+    Seconds(Duration),
+    Minutes(Duration),
+    Hours(Duration),
+    Days(Duration),
+}
+
+impl TryFrom<Duration> for DurationType {
+    type Error = String;
+    fn try_from(value: Duration) -> Result<Self, Self::Error> {
+        let mut i = 0;
+        for (idx, c) in value.unit.chars().enumerate() {
+            if !c.is_numeric() {
+                i += idx;
+                break;
+            }
+        }
+        match value.unit[..].to_lowercase().as_ref() {
+            "s" | "sec" => Ok(Self::Seconds(value)),
+            "m" | "min" => Ok(Self::Minutes(value)),
+            "h" | "hr" | "hour" => Ok(Self::Hours(value)),
+            "d" | "day" => Ok(Self::Days(value)),
+            _ => Err("Invalid unit".to_string()),
         }
     }
 }
@@ -105,7 +128,8 @@ pub async fn unban(
 #[poise::command(
     prefix_command,
     slash_command,
-    required_permissions = "MODERATE_MEMBERS"
+    required_permissions = "MODERATE_MEMBERS",
+    aliases("timeout")
 )]
 pub async fn mute(
     ctx: Context<'_>,
@@ -116,12 +140,13 @@ pub async fn mute(
     #[description = "The reason for it"] reason: Option<String>,
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
-    let duration = Duration::from(actual_duration.clone());
+    let duration =
+        DurationType::try_from(Duration::try_from(actual_duration.clone()).unwrap()).unwrap();
     let duration = match duration {
-        Duration::Seconds(time) => time,
-        Duration::Minutes(time) => time,
-        Duration::Hours(time) => time,
-        Duration::Days(time) => time,
+        DurationType::Seconds(Duration { amount, .. }) => amount,
+        DurationType::Minutes(Duration { amount, .. }) => amount * 60,
+        DurationType::Hours(Duration { amount, .. }) => amount * 60 * 60,
+        DurationType::Days(Duration { amount, .. }) => amount * 60 * 60 * 24,
     };
     let timestamp =
         Timestamp::from_unix_timestamp(Timestamp::unix_timestamp(&Timestamp::now()) + duration)
