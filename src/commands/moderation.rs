@@ -25,33 +25,6 @@ impl TryFrom<String> for Duration {
     }
 }
 
-enum DurationType {
-    Seconds(Duration),
-    Minutes(Duration),
-    Hours(Duration),
-    Days(Duration),
-}
-
-impl TryFrom<Duration> for DurationType {
-    type Error = String;
-    fn try_from(value: Duration) -> Result<Self, Self::Error> {
-        let mut i = 0;
-        for (idx, c) in value.unit.chars().enumerate() {
-            if !c.is_numeric() {
-                i += idx;
-                break;
-            }
-        }
-        match value.unit[..].to_lowercase().as_ref() {
-            "s" | "sec" => Ok(Self::Seconds(value)),
-            "m" | "min" => Ok(Self::Minutes(value)),
-            "h" | "hr" | "hour" => Ok(Self::Hours(value)),
-            "d" | "day" => Ok(Self::Days(value)),
-            _ => Err("Invalid unit".to_string()),
-        }
-    }
-}
-
 /// Kicks a member
 #[poise::command(prefix_command, slash_command, required_permissions = "KICK_MEMBERS")]
 pub async fn kick(
@@ -140,20 +113,23 @@ pub async fn mute(
     #[description = "The reason for it"] reason: Option<String>,
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
-    let duration =
-        DurationType::try_from(Duration::try_from(actual_duration.clone()).unwrap()).unwrap();
-    let duration = match duration {
-        DurationType::Seconds(Duration { amount, .. }) => amount,
-        DurationType::Minutes(Duration { amount, .. }) => amount * 60,
-        DurationType::Hours(Duration { amount, .. }) => amount * 60 * 60,
-        DurationType::Days(Duration { amount, .. }) => amount * 60 * 60 * 24,
+    let duration = Duration::try_from(actual_duration.clone()).unwrap();
+    let duration = match duration.unit[..].to_lowercase().as_ref() {
+        "s" | "sec" => duration.amount,
+        "m" | "min" => duration.amount * 60,
+        "h" | "hr" | "hour" => duration.amount * 3600,
+        "d" | "day" => duration.amount * 3600 * 24,
+        _ => 0,
     };
+
     let timestamp =
         Timestamp::from_unix_timestamp(Timestamp::unix_timestamp(&Timestamp::now()) + duration)
             .unwrap();
+
     member
         .disable_communication_until_datetime(&ctx, timestamp)
         .await?;
+
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
     ctx.send(|msg| {
         msg.embed(|em| {
