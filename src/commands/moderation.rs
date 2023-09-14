@@ -202,3 +202,42 @@ pub async fn purge(
     .await?;
     Ok(())
 }
+
+/// Set slowmode in a channel
+#[poise::command(
+    prefix_command,
+    slash_command,
+    required_permissions = "MANAGE_MESSAGES",
+    aliases("sm")
+)]
+pub async fn slowmode(
+    ctx: Context<'_>,
+    #[description = "The time of slowmode"] duration: Option<String>,
+) -> Result<(), Error> {
+    let actual_duration = duration.unwrap_or("1h".to_string());
+    let duration = Duration::try_from(actual_duration.clone()).unwrap();
+    let duration = match duration.unit[..].to_lowercase().as_ref() {
+        "s" | "sec" => duration.amount,
+        "m" | "min" => duration.amount * 60,
+        "h" | "hr" | "hour" => duration.amount * 3600,
+        "d" | "day" => duration.amount * 3600 * 24,
+        _ => 0,
+    };
+    ctx.channel_id()
+        .edit(&ctx, |c| {
+            c.rate_limit_per_user(duration.try_into().unwrap())
+        })
+        .await?;
+    ctx.send(|msg| {
+        msg.embed(|em| {
+            em.title("Slowmode")
+                .description(format!(
+                    "Successfully added slowmode for {} in this channel",
+                    actual_duration
+                ))
+                .color(Color::BLUE)
+        })
+    })
+    .await?;
+    Ok(())
+}
