@@ -168,3 +168,37 @@ pub async fn unmute(
     .await?;
     Ok(())
 }
+
+/// Purge/clear messages in a channel
+#[poise::command(
+    prefix_command,
+    slash_command,
+    required_permissions = "MANAGE_MESSAGES",
+    aliases("clear")
+)]
+pub async fn purge(
+    ctx: Context<'_>,
+    #[description = "The amounts of messages you want to delete"] amount: Option<u64>,
+) -> Result<(), Error> {
+    let amount = amount.unwrap_or(10);
+    let current_channel = ctx.channel_id();
+    for message in current_channel
+        .messages(&ctx, |retriever| retriever.before(ctx.id()).limit(amount))
+        .await?
+        .into_iter()
+    {
+        message.delete(&ctx).await?;
+    }
+    ctx.send(|msg| {
+        msg.embed(|em| {
+            em.title("Purged")
+                .description(format!(
+                    "Successfully purged {} messages from this channel",
+                    amount
+                ))
+                .color(Color::BLUE)
+        })
+    })
+    .await?;
+    Ok(())
+}
