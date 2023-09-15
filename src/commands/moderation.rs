@@ -4,11 +4,11 @@ use crate::{Context, Error};
 
 struct Duration {
     amount: i64,
-    unit: String,
+    _unit: String,
 }
 
 impl TryFrom<String> for Duration {
-    type Error = String;
+    type Error = i64;
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let mut i = 0;
         for (idx, c) in value.chars().enumerate() {
@@ -18,9 +18,17 @@ impl TryFrom<String> for Duration {
             }
         }
         let (amount, unit) = value.split_at(i);
+        let amount = amount.parse::<i64>().unwrap();
+        let amount = match unit {
+            "s" | "sec" => amount,
+            "m" | "min" => amount * 60,
+            "h" | "hr" | "hour" => amount * 3600,
+            "d" | "day" => amount * 3600 * 24,
+            _ => 0,
+        };
         Ok(Self {
-            amount: amount.parse::<i64>().unwrap(),
-            unit: unit.to_string(),
+            amount,
+            _unit: unit.to_string(),
         })
     }
 }
@@ -114,17 +122,10 @@ pub async fn mute(
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
     let duration = Duration::try_from(actual_duration.clone()).unwrap();
-    let duration = match duration.unit[..].to_lowercase().as_ref() {
-        "s" | "sec" => duration.amount,
-        "m" | "min" => duration.amount * 60,
-        "h" | "hr" | "hour" => duration.amount * 3600,
-        "d" | "day" => duration.amount * 3600 * 24,
-        _ => 0,
-    };
-
-    let timestamp =
-        Timestamp::from_unix_timestamp(Timestamp::unix_timestamp(&Timestamp::now()) + duration)
-            .unwrap();
+    let timestamp = Timestamp::from_unix_timestamp(
+        Timestamp::unix_timestamp(&Timestamp::now()) + duration.amount,
+    )
+    .unwrap();
 
     member
         .disable_communication_until_datetime(&ctx, timestamp)
@@ -216,16 +217,9 @@ pub async fn slowmode(
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
     let duration = Duration::try_from(actual_duration.clone()).unwrap();
-    let duration = match duration.unit[..].to_lowercase().as_ref() {
-        "s" | "sec" => duration.amount,
-        "m" | "min" => duration.amount * 60,
-        "h" | "hr" | "hour" => duration.amount * 3600,
-        "d" | "day" => duration.amount * 3600 * 24,
-        _ => 0,
-    };
     ctx.channel_id()
         .edit(&ctx, |c| {
-            c.rate_limit_per_user(duration.try_into().unwrap())
+            c.rate_limit_per_user(duration.amount.try_into().unwrap())
         })
         .await?;
     ctx.send(|msg| {
