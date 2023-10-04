@@ -34,7 +34,12 @@ impl TryFrom<String> for Duration {
 }
 
 /// Kicks a member
-#[poise::command(prefix_command, slash_command, required_permissions = "KICK_MEMBERS")]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    required_permissions = "KICK_MEMBERS",
+    required_bot_permissions = "KICK_MEMBERS"
+)]
 pub async fn kick(
     ctx: Context<'_>,
     #[description = "The member you want to kick"]
@@ -59,7 +64,12 @@ pub async fn kick(
 }
 
 /// Bans a member
-#[poise::command(prefix_command, slash_command, required_permissions = "BAN_MEMBERS")]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    required_permissions = "BAN_MEMBERS",
+    required_bot_permissions = "BAN_MEMBERS"
+)]
 pub async fn ban(
     ctx: Context<'_>,
     #[description = "The member you want to ban"]
@@ -86,7 +96,12 @@ pub async fn ban(
 }
 
 /// Unbans a banned user
-#[poise::command(prefix_command, slash_command, required_permissions = "BAN_MEMBERS")]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    required_permissions = "BAN_MEMBERS",
+    required_bot_permissions = "BAN_MEMBERS"
+)]
 pub async fn unban(
     ctx: Context<'_>,
     #[description = "The user you want to unban"]
@@ -110,6 +125,7 @@ pub async fn unban(
     prefix_command,
     slash_command,
     required_permissions = "MODERATE_MEMBERS",
+    required_bot_permissions = "MODERATE_MEMBERS",
     aliases("timeout")
 )]
 pub async fn mute(
@@ -150,7 +166,8 @@ pub async fn mute(
 #[poise::command(
     prefix_command,
     slash_command,
-    required_permissions = "MODERATE_MEMBERS"
+    required_permissions = "MODERATE_MEMBERS",
+    required_bot_permissions = "MODERATE_MEMBERS"
 )]
 pub async fn unmute(
     ctx: Context<'_>,
@@ -175,6 +192,7 @@ pub async fn unmute(
     prefix_command,
     slash_command,
     required_permissions = "MANAGE_MESSAGES",
+    required_bot_permissions = "MANAGE_MESSAGES",
     aliases("clear")
 )]
 pub async fn purge(
@@ -209,6 +227,7 @@ pub async fn purge(
     prefix_command,
     slash_command,
     required_permissions = "MANAGE_MESSAGES",
+    required_bot_permissions = "MANAGE_MESSAGES",
     aliases("sm")
 )]
 pub async fn slowmode(
