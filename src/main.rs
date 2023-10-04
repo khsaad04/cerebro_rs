@@ -33,11 +33,6 @@ async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> Shuttle
     let framework = poise::Framework::builder()
         .token(discord_token)
         .options(poise::FrameworkOptions {
-            prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some(">".into()),
-                case_insensitive_commands: true,
-                ..Default::default()
-            },
             commands: vec![
                 commands::help::help(),
                 commands::utils::ping(),

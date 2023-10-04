@@ -35,7 +35,6 @@ impl TryFrom<String> for Duration {
 
 /// Kicks a member
 #[poise::command(
-    prefix_command,
     slash_command,
     required_permissions = "KICK_MEMBERS",
     required_bot_permissions = "KICK_MEMBERS"
@@ -65,7 +64,6 @@ pub async fn kick(
 
 /// Bans a member
 #[poise::command(
-    prefix_command,
     slash_command,
     required_permissions = "BAN_MEMBERS",
     required_bot_permissions = "BAN_MEMBERS"
@@ -97,7 +95,6 @@ pub async fn ban(
 
 /// Unbans a banned user
 #[poise::command(
-    prefix_command,
     slash_command,
     required_permissions = "BAN_MEMBERS",
     required_bot_permissions = "BAN_MEMBERS"
@@ -122,7 +119,6 @@ pub async fn unban(
 
 /// Mute/timeout a member
 #[poise::command(
-    prefix_command,
     slash_command,
     required_permissions = "MODERATE_MEMBERS",
     required_bot_permissions = "MODERATE_MEMBERS",
@@ -164,7 +160,6 @@ pub async fn mute(
 
 /// Unmute/Remove timeout from a member
 #[poise::command(
-    prefix_command,
     slash_command,
     required_permissions = "MODERATE_MEMBERS",
     required_bot_permissions = "MODERATE_MEMBERS"
@@ -189,7 +184,6 @@ pub async fn unmute(
 
 /// Purge/clear messages in a channel
 #[poise::command(
-    prefix_command,
     slash_command,
     required_permissions = "MANAGE_MESSAGES",
     required_bot_permissions = "MANAGE_MESSAGES",
@@ -224,7 +218,6 @@ pub async fn purge(
 
 /// Set slowmode in a channel
 #[poise::command(
-    prefix_command,
     slash_command,
     required_permissions = "MANAGE_MESSAGES",
     required_bot_permissions = "MANAGE_MESSAGES",
