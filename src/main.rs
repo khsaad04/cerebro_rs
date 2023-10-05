@@ -1,4 +1,5 @@
 mod commands;
+mod utils;
 
 use anyhow::Context as _;
 use poise::serenity_prelude as serenity;
@@ -8,20 +9,6 @@ use shuttle_secrets::SecretStore;
 pub struct Data {}
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
-
-async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
-    match error {
-        poise::FrameworkError::Setup { error, .. } => panic!("Failed to start bot: {:?}", error),
-        poise::FrameworkError::Command { error, ctx } => {
-            println!("Error in command `{}`: {:?}", ctx.command().name, error,);
-        }
-        error => {
-            if let Err(e) = poise::builtins::on_error(error).await {
-                println!("Error while handling error: {}", e)
-            }
-        }
-    }
-}
 
 #[shuttle_runtime::main]
 async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> ShuttlePoise<Data, Error> {
@@ -46,7 +33,7 @@ async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> Shuttle
                 commands::moderation::purge(),
                 commands::moderation::slowmode(),
             ],
-            on_error: |error| Box::pin(on_error(error)),
+            on_error: |error| Box::pin(utils::error::on_error(error)),
             ..Default::default()
         })
         .intents(
