@@ -48,7 +48,7 @@ pub async fn userinfo(
 ) -> Result<(), Error> {
     let author = ctx.author_member().await.expect("Not a member");
     let member = member.as_ref().unwrap_or(&author);
-    let roles = member.roles(&ctx).unwrap();
+    let roles = member.roles(ctx).unwrap();
     let mut role_list = String::new();
     for role in roles {
         role_list.push_str(format!("`{}` ", &role.name[..])[..].as_ref());

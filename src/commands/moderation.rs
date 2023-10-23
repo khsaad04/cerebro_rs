@@ -35,6 +35,7 @@ impl TryFrom<String> for Duration {
 
 /// Kicks a member
 #[poise::command(
+    prefix_command,
     slash_command,
     required_permissions = "KICK_MEMBERS",
     required_bot_permissions = "KICK_MEMBERS"
