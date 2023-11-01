@@ -45,7 +45,9 @@ pub async fn kick(
     #[description = "The member you want to kick"]
     #[autocomplete = "poise::builtins::autocomplete_command"]
     member: serenity::Member,
-    #[description = "The reason for it"] reason: Option<String>,
+    #[description = "The reason for it"]
+    #[rest = true]
+    reason: Option<String>,
 ) -> Result<(), Error> {
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
     member.kick_with_reason(&ctx, &reason[..]).await?;
@@ -65,6 +67,7 @@ pub async fn kick(
 
 /// Bans a member
 #[poise::command(
+    prefix_command,
     slash_command,
     required_permissions = "BAN_MEMBERS",
     required_bot_permissions = "BAN_MEMBERS"
@@ -75,7 +78,9 @@ pub async fn ban(
     #[autocomplete = "poise::builtins::autocomplete_command"]
     member: serenity::Member,
     #[description = "The amount of messages to delete"] delete_message_duration: Option<u8>,
-    #[description = "The reason for it"] reason: Option<String>,
+    #[description = "The reason for it"]
+    #[rest = true]
+    reason: Option<String>,
 ) -> Result<(), Error> {
     let del = delete_message_duration.unwrap_or(7);
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
@@ -96,6 +101,7 @@ pub async fn ban(
 
 /// Unbans a banned user
 #[poise::command(
+    prefix_command,
     slash_command,
     required_permissions = "BAN_MEMBERS",
     required_bot_permissions = "BAN_MEMBERS"
@@ -120,6 +126,7 @@ pub async fn unban(
 
 /// Mute/timeout a member
 #[poise::command(
+    prefix_command,
     slash_command,
     required_permissions = "MODERATE_MEMBERS",
     required_bot_permissions = "MODERATE_MEMBERS",
@@ -131,7 +138,9 @@ pub async fn mute(
     #[autocomplete = "poise::builtins::autocomplete_command"]
     mut member: serenity::Member,
     #[description = "The duration for it"] duration: Option<String>,
-    #[description = "The reason for it"] reason: Option<String>,
+    #[description = "The reason for it"]
+    #[rest = true]
+    reason: Option<String>,
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
     let duration = Duration::try_from(actual_duration.clone()).unwrap();
@@ -161,6 +170,7 @@ pub async fn mute(
 
 /// Unmute/Remove timeout from a member
 #[poise::command(
+    prefix_command,
     slash_command,
     required_permissions = "MODERATE_MEMBERS",
     required_bot_permissions = "MODERATE_MEMBERS"
@@ -185,6 +195,7 @@ pub async fn unmute(
 
 /// Purge/clear messages in a channel
 #[poise::command(
+    prefix_command,
     slash_command,
     required_permissions = "MANAGE_MESSAGES",
     required_bot_permissions = "MANAGE_MESSAGES",
@@ -219,6 +230,7 @@ pub async fn purge(
 
 /// Set slowmode in a channel
 #[poise::command(
+    prefix_command,
     slash_command,
     required_permissions = "MANAGE_MESSAGES",
     required_bot_permissions = "MANAGE_MESSAGES",
