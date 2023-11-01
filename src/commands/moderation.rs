@@ -55,10 +55,10 @@ pub async fn kick(
         msg.embed(|em| {
             em.title("Member Kicked")
                 .description(format!(
-                    "Successfully kicked {} for {}",
+                    "Successfully kicked `{}` for `{}`",
                     member.user.name, reason
                 ))
-                .color(Color::BLUE)
+                .color(Color::hex("#f0290a")).thumbnail(member.avatar_url().unwrap())
         })
     })
     .await?;
