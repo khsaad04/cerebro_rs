@@ -6,6 +6,8 @@ use poise::serenity_prelude as serenity;
 use shuttle_poise::ShuttlePoise;
 use shuttle_secrets::SecretStore;
 
+use commands::{help::*, moderation::*, utils::*};
+
 pub struct Data {}
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
@@ -21,22 +23,22 @@ async fn poise(#[shuttle_secrets::Secrets] secret_store: SecretStore) -> Shuttle
         .token(discord_token)
         .options(poise::FrameworkOptions {
             prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some('?'.into()),
+                prefix: Some('>'.into()),
                 case_insensitive_commands: true,
                 ..Default::default()
             },
             commands: vec![
-                commands::help::help(),
-                commands::utils::ping(),
-                commands::utils::avatar(),
-                commands::utils::userinfo(),
-                commands::moderation::kick(),
-                commands::moderation::ban(),
-                commands::moderation::unban(),
-                commands::moderation::mute(),
-                commands::moderation::unmute(),
-                commands::moderation::purge(),
-                commands::moderation::slowmode(),
+                help(),
+                ping(),
+                avatar(),
+                userinfo(),
+                kick(),
+                ban(),
+                unban(),
+                mute(),
+                unmute(),
+                purge(),
+                slowmode(),
             ],
             on_error: |error| Box::pin(utils::error::on_error(error)),
             ..Default::default()
