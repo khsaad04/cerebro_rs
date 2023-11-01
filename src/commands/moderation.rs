@@ -58,8 +58,7 @@ pub async fn kick(
                     "Successfully kicked `{}` for `{}`",
                     member.user.name, reason
                 ))
-                .color(Color::from_rgb(185, 5, 1))
-                .thumbnail(member.avatar_url().unwrap())
+                .color(Color::DARK_GREEN)
         })
     })
     .await?;
@@ -90,10 +89,10 @@ pub async fn ban(
         msg.embed(|em| {
             em.title("Member Banned")
                 .description(format!(
-                    "Successfully banned {} for {}",
+                    "Successfully banned `{}` for `{}`",
                     member.user.name, reason
                 ))
-                .color(Color::BLUE)
+                .color(Color::DARK_GREEN)
         })
     })
     .await?;
@@ -117,8 +116,8 @@ pub async fn unban(
     ctx.send(|msg| {
         msg.embed(|em| {
             em.title("Member Unbanned")
-                .description(format!("Successfully unbanned {}", user.name))
-                .color(Color::BLUE)
+                .description(format!("Successfully unbanned `{}`", user.name))
+                .color(Color::DARK_GREEN)
         })
     })
     .await?;
@@ -159,10 +158,10 @@ pub async fn mute(
         msg.embed(|em| {
             em.title("Member Muted")
                 .description(format!(
-                    "Successfully Muted {} for {} because of {}",
+                    "Successfully Muted `{}` for `{}` because of `{}`",
                     member.user.name, actual_duration, reason
                 ))
-                .color(Color::BLUE)
+                .color(Color::DARK_GREEN)
         })
     })
     .await?;
@@ -186,8 +185,8 @@ pub async fn unmute(
     ctx.send(|msg| {
         msg.embed(|em| {
             em.title("Member Muted")
-                .description(format!("Successfully Unmuted {}", member.user.name))
-                .color(Color::BLUE)
+                .description(format!("Successfully Unmuted `{}`", member.user.name))
+                .color(Color::DARK_GREEN)
         })
     })
     .await?;
@@ -219,10 +218,10 @@ pub async fn purge(
         msg.embed(|em| {
             em.title("Purged")
                 .description(format!(
-                    "Successfully purged {} messages from this channel",
+                    "Successfully purged `{}` messages from this channel",
                     amount
                 ))
-                .color(Color::BLUE)
+                .color(Color::DARK_GREEN)
         })
     })
     .await?;
@@ -252,10 +251,10 @@ pub async fn slowmode(
         msg.embed(|em| {
             em.title("Slowmode")
                 .description(format!(
-                    "Successfully added slowmode for {} in this channel",
+                    "Successfully added slowmode for `{}` in this channel",
                     actual_duration
                 ))
-                .color(Color::BLUE)
+                .color(Color::DARK_GREEN)
         })
     })
     .await?;
