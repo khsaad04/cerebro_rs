@@ -58,7 +58,8 @@ pub async fn kick(
                     "Successfully kicked `{}` for `{}`",
                     member.user.name, reason
                 ))
-                .color(Color::hex("#f0290a")).thumbnail(member.avatar_url().unwrap())
+                .color(Color::from_rgb(185, 5, 1))
+                .thumbnail(member.avatar_url().unwrap())
         })
     })
     .await?;
