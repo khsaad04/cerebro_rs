@@ -117,7 +117,7 @@ pub async fn unban(
     #[autocomplete = "poise::builtins::autocomplete_command"]
     user: serenity::User,
 ) -> Result<(), Error> {
-    ctx.guild().unwrap().unban(&ctx, user.id).await?;
+    let _ = ctx.guild_id().unwrap().unban(&ctx, user.id).await;
     ctx.send(
         CreateReply::default().embed(
             CreateEmbed::default()
