@@ -1,4 +1,7 @@
-use poise::serenity_prelude::{self as serenity, Color, Timestamp};
+use poise::{
+    serenity_prelude::{self as serenity, Color, CreateEmbed, EditChannel, GetMessages, Timestamp},
+    CreateReply,
+};
 
 use crate::{Context, Error};
 
@@ -51,16 +54,17 @@ pub async fn kick(
 ) -> Result<(), Error> {
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
     member.kick_with_reason(&ctx, &reason[..]).await?;
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("Member Kicked")
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("Member Kicked")
                 .description(format!(
                     "Successfully kicked `{}` for `{}`",
                     member.user.name, reason
                 ))
-                .color(Color::DARK_GREEN)
-        })
-    })
+                .color(Color::DARK_GREEN),
+        ),
+    )
     .await?;
     Ok(())
 }
@@ -85,16 +89,17 @@ pub async fn ban(
     let del = delete_message_duration.unwrap_or(7);
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
     member.ban_with_reason(&ctx, del, &reason[..]).await?;
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("Member Banned")
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("Member Banned")
                 .description(format!(
                     "Successfully banned `{}` for `{}`",
                     member.user.name, reason
                 ))
-                .color(Color::DARK_GREEN)
-        })
-    })
+                .color(Color::DARK_GREEN),
+        ),
+    )
     .await?;
     Ok(())
 }
@@ -113,13 +118,14 @@ pub async fn unban(
     user: serenity::User,
 ) -> Result<(), Error> {
     ctx.guild().unwrap().unban(&ctx, user.id).await?;
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("Member Unbanned")
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("Member Unbanned")
                 .description(format!("Successfully unbanned `{}`", user.name))
-                .color(Color::DARK_GREEN)
-        })
-    })
+                .color(Color::DARK_GREEN),
+        ),
+    )
     .await?;
     Ok(())
 }
@@ -154,16 +160,17 @@ pub async fn mute(
         .await?;
 
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("Member Muted")
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("Member Muted")
                 .description(format!(
-                    "Successfully Muted `{}` for `{}` because of `{}`",
+                    "Successfully muted `{}` for `{}` because of `{}`",
                     member.user.name, actual_duration, reason
                 ))
-                .color(Color::DARK_GREEN)
-        })
-    })
+                .color(Color::DARK_GREEN),
+        ),
+    )
     .await?;
     Ok(())
 }
@@ -182,13 +189,14 @@ pub async fn unmute(
     mut member: serenity::Member,
 ) -> Result<(), Error> {
     member.enable_communication(&ctx).await?;
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("Member Muted")
-                .description(format!("Successfully Unmuted `{}`", member.user.name))
-                .color(Color::DARK_GREEN)
-        })
-    })
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("Member Unmuted")
+                .description(format!("Successfully unmuted `{}`", member.user.name))
+                .color(Color::DARK_GREEN),
+        ),
+    )
     .await?;
     Ok(())
 }
@@ -203,27 +211,28 @@ pub async fn unmute(
 )]
 pub async fn purge(
     ctx: Context<'_>,
-    #[description = "The amounts of messages you want to delete"] amount: Option<u64>,
+    #[description = "The amounts of messages you want to delete"] amount: Option<u8>,
 ) -> Result<(), Error> {
     let amount = amount.unwrap_or(10);
     let current_channel = ctx.channel_id();
     for message in current_channel
-        .messages(&ctx, |retriever| retriever.before(ctx.id()).limit(amount))
+        .messages(&ctx, GetMessages::new().before(ctx.id()).limit(amount))
         .await?
         .into_iter()
     {
         message.delete(&ctx).await?;
     }
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("Purged")
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("Purged")
                 .description(format!(
                     "Successfully purged `{}` messages from this channel",
                     amount
                 ))
-                .color(Color::DARK_GREEN)
-        })
-    })
+                .color(Color::DARK_GREEN),
+        ),
+    )
     .await?;
     Ok(())
 }
@@ -243,20 +252,22 @@ pub async fn slowmode(
     let actual_duration = duration.unwrap_or("1h".to_string());
     let duration = Duration::try_from(actual_duration.clone()).unwrap();
     ctx.channel_id()
-        .edit(&ctx, |c| {
-            c.rate_limit_per_user(duration.amount.try_into().unwrap())
-        })
+        .edit(
+            &ctx,
+            EditChannel::new().rate_limit_per_user(duration.amount.try_into().unwrap()),
+        )
         .await?;
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("Slowmode")
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("Slowmode")
                 .description(format!(
                     "Successfully added slowmode for `{}` in this channel",
                     actual_duration
                 ))
-                .color(Color::DARK_GREEN)
-        })
-    })
+                .color(Color::DARK_GREEN),
+        ),
+    )
     .await?;
     Ok(())
 }

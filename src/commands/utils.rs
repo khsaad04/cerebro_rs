@@ -1,4 +1,7 @@
-use poise::serenity_prelude as serenity;
+use poise::{
+    serenity_prelude::{self as serenity, CreateEmbed},
+    CreateReply,
+};
 
 use crate::{Context, Error};
 use std::time::Instant;
@@ -10,9 +13,10 @@ pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
     let msg = ctx.say("Calculating ping...").await?;
     let end_time = Instant::now();
 
-    msg.edit(ctx, |m| {
-        m.content(format!("{} ms", (end_time - start_time).as_millis()))
-    })
+    msg.edit(
+        ctx,
+        CreateReply::default().content(format!("{} ms", (end_time - start_time).as_millis())),
+    )
     .await?;
     Ok(())
 }
@@ -27,13 +31,14 @@ pub async fn avatar(
 ) -> Result<(), Error> {
     let author = ctx.author_member().await.expect("Not a member");
     let member = member.as_ref().unwrap_or(&author);
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("Avatar")
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("Avatar")
                 .description(format!("{}'s avatar", member.user.name))
-                .image(member.user.avatar_url().expect("No image found"))
-        })
-    })
+                .image(member.user.avatar_url().expect("No image found")),
+        ),
+    )
     .await?;
     Ok(())
 }
@@ -53,22 +58,31 @@ pub async fn userinfo(
     for role in roles {
         role_list.push_str(format!("`{}` ", &role.name[..])[..].as_ref());
     }
-    ctx.send(|msg| {
-        msg.embed(|em| {
-            em.title("User info")
+    ctx.send(
+        CreateReply::default().embed(
+            CreateEmbed::default()
+                .title("User info")
                 .description(format!("{}'s user info", member.user.name))
-                .thumbnail(member.user.avatar_url().expect("No avatar found"))
-                .field("ID", member.user.id, true)
+                .thumbnail(member.user.avatar_url().expect("No image found"))
+                .field("id", member.user.id.to_string(), true)
                 .field(
-                    "Nickname",
-                    member.clone().nick.unwrap_or("None".into()),
+                    "nickname",
+                    member.clone().nick.unwrap_or("none".into()),
                     true,
                 )
-                .field("Account created", member.user.created_at(), false)
-                .field("Joined server", member.joined_at.unwrap(), false)
-                .field("Roles", role_list, false)
-        })
-    })
+                .field(
+                    "account created",
+                    member.user.created_at().to_string(),
+                    false,
+                )
+                .field(
+                    "joined server",
+                    member.joined_at.unwrap().to_string(),
+                    false,
+                )
+                .field("roles", role_list, false),
+        ),
+    )
     .await?;
     Ok(())
 }
