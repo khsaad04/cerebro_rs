@@ -29,6 +29,7 @@
       nativeBuildInputs = with pkgs; [
         gdb
         rustPkg
+        rust-analyzer-nightly
       ];
     };
   };
