@@ -1,49 +1,35 @@
 {
-  description = "cerebro devShell";
-
   inputs = {
-    utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixpkgs.url = "nixpkgs/nixos-unstable";
   };
-
   outputs = {
     nixpkgs,
-    utils,
     fenix,
     ...
   }: let
-    overlays = [fenix.overlays.default];
-
-    pkgsForSystem = system:
-      import nixpkgs {
-        inherit overlays system;
-        config.allowUnfree = true;
-      };
-
+    system = "x86_64-linux";
     toolchain = "stable";
-  in
-    utils.lib.eachSystem ["x86_64-linux"] (system: let
-      legacyPackages = pkgsForSystem system;
-      rustPkg = legacyPackages.fenix."${toolchain}".withComponents [
-        "cargo"
-        "clippy"
-        "rust-src"
-        "rustc"
-        "rustfmt"
+    overlays = [fenix.overlays.default];
+    pkgs = import nixpkgs {
+      inherit system overlays;
+    };
+    rustPkg = pkgs.fenix."${toolchain}".withComponents [
+      "cargo"
+      "clippy"
+      "rust-src"
+      "rustc"
+      "rustfmt"
+    ];
+  in {
+    devShells.x86_64-linux.default = pkgs.mkShell {
+      nativeBuildInputs = with pkgs; [
+        gdb
+        rustPkg
       ];
-    in rec {
-      inherit legacyPackages;
-
-      devShell = with legacyPackages;
-        mkShell {
-          buildInputs = [
-            gdb
-            rustPkg
-          ];
-        };
-    });
+    };
+  };
 }
