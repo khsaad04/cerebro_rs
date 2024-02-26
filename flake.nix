@@ -1,31 +1,41 @@
 {
-  description = "cerebro devShell";
+  description = "devShell for ceremusic";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
-    nixpkgs,
-    rust-overlay,
+    self,
+    fenix,
     flake-utils,
-    ...
+    nixpkgs,
   }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        overlays = [(import rust-overlay)];
+    flake-utils.lib.eachDefaultSystem (system: {
+      packages.default = let
+        overlays = [fenix.overlays.default];
         pkgs = import nixpkgs {
-          inherit system overlays;
+          inherit overlays;
         };
       in
         with pkgs; {
           devShells.default = mkShell {
-            buildInputs = [
+            nativeBuildInputs = [
+              pkg-config
               gdb
-              rust-bin.stable.latest.default
+              (fenix.stable.withComponents [
+                "cargo"
+                "clippy"
+                "rust-src"
+                "rustc"
+                "rustfmt"
+              ])
             ];
           };
-        }
-    );
+        };
+    });
 }
