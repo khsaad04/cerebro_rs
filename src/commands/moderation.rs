@@ -21,7 +21,7 @@ impl TryFrom<String> for Duration {
             }
         }
         let (amount, unit) = value.split_at(i);
-        let amount = amount.parse::<i64>().unwrap();
+        let amount = amount.parse::<i64>().expect("Could not parse to i64");
         let amount = match unit {
             "s" | "sec" => amount,
             "m" | "min" => amount * 60,
@@ -117,7 +117,11 @@ pub async fn unban(
     #[autocomplete = "poise::builtins::autocomplete_command"]
     user: serenity::User,
 ) -> Result<(), Error> {
-    let _ = ctx.guild_id().unwrap().unban(&ctx, user.id).await;
+    let _ = ctx
+        .guild_id()
+        .expect("Could not retrieve guild_id")
+        .unban(&ctx, user.id)
+        .await;
     ctx.send(
         CreateReply::default().embed(
             CreateEmbed::default()
@@ -149,11 +153,12 @@ pub async fn mute(
     reason: Option<String>,
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
-    let duration = Duration::try_from(actual_duration.clone()).unwrap();
+    let duration =
+        Duration::try_from(actual_duration.clone()).expect("Failed to convert to duration");
     let timestamp = Timestamp::from_unix_timestamp(
         Timestamp::unix_timestamp(&Timestamp::now()) + duration.amount,
     )
-    .unwrap();
+    .expect("Failed to convert to duration");
 
     member
         .disable_communication_until_datetime(&ctx, timestamp)
@@ -250,11 +255,17 @@ pub async fn slowmode(
     #[description = "The time of slowmode"] duration: Option<String>,
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
-    let duration = Duration::try_from(actual_duration.clone()).unwrap();
+    let duration =
+        Duration::try_from(actual_duration.clone()).expect("Failed to convert to duration");
     ctx.channel_id()
         .edit(
             &ctx,
-            EditChannel::new().rate_limit_per_user(duration.amount.try_into().unwrap()),
+            EditChannel::new().rate_limit_per_user(
+                duration
+                    .amount
+                    .try_into()
+                    .expect("Failed to convert to u16"),
+            ),
         )
         .await?;
     ctx.send(

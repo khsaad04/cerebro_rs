@@ -53,7 +53,7 @@ pub async fn userinfo(
 ) -> Result<(), Error> {
     let author = ctx.author_member().await.expect("Not a member");
     let member = member.as_ref().unwrap_or(&author);
-    let roles = member.roles(ctx).unwrap();
+    let roles = member.roles(ctx).expect("No role data found");
     let mut role_list = String::new();
     for role in roles {
         role_list.push_str(format!("`{}` ", &role.name[..])[..].as_ref());
@@ -77,7 +77,10 @@ pub async fn userinfo(
                 )
                 .field(
                     "joined server",
-                    member.joined_at.unwrap().to_string(),
+                    member
+                        .joined_at
+                        .expect("Could not retrieve joining info")
+                        .to_string(),
                     false,
                 )
                 .field("roles", role_list, false),
