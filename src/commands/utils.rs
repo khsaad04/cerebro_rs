@@ -6,7 +6,7 @@ use poise::{
 use crate::{Context, Error};
 use std::time::Instant;
 
-/// Shows the bot's latency
+/// Show the bot's latency
 #[poise::command(prefix_command, slash_command)]
 pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
     let start_time = Instant::now();
@@ -21,7 +21,7 @@ pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-/// Shows the user's avatar
+/// Show the user's avatar
 #[poise::command(prefix_command, slash_command)]
 pub async fn avatar(
     ctx: Context<'_>,
@@ -43,7 +43,7 @@ pub async fn avatar(
     Ok(())
 }
 
-/// Shows the user's info
+/// Show the user's info
 #[poise::command(prefix_command, slash_command)]
 pub async fn userinfo(
     ctx: Context<'_>,

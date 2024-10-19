@@ -36,7 +36,7 @@ impl TryFrom<String> for Duration {
     }
 }
 
-/// Kicks a member
+/// Kick a member
 #[poise::command(
     prefix_command,
     slash_command,
@@ -69,7 +69,7 @@ pub async fn kick(
     Ok(())
 }
 
-/// Bans a member
+/// Ban a member
 #[poise::command(
     prefix_command,
     slash_command,
@@ -104,7 +104,7 @@ pub async fn ban(
     Ok(())
 }
 
-/// Unbans a banned user
+/// Unban a banned user
 #[poise::command(
     prefix_command,
     slash_command,
