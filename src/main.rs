@@ -7,7 +7,9 @@ use shuttle_serenity::ShuttleSerenity;
 
 use commands::{help::*, moderation::*, utils::*};
 
-pub struct Data {}
+pub struct Data {
+    bot_start_time: std::time::Instant,
+}
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
 
@@ -21,12 +23,13 @@ async fn poise(#[shuttle_runtime::Secrets] secret_store: SecretStore) -> Shuttle
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some('>'.into()),
+                prefix: Some('.'.into()),
                 ..Default::default()
             },
             commands: vec![
                 help(),
                 ping(),
+                uptime(),
                 avatar(),
                 userinfo(),
                 kick(),
@@ -40,10 +43,11 @@ async fn poise(#[shuttle_runtime::Secrets] secret_store: SecretStore) -> Shuttle
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
+            let bot_start_time = std::time::Instant::now();
             Box::pin(async move {
                 println!("Logged in as {}", _ready.user.name);
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data {})
+                Ok(Data { bot_start_time })
             })
         })
         .build();
