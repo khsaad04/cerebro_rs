@@ -23,7 +23,7 @@ async fn poise(#[shuttle_runtime::Secrets] secret_store: SecretStore) -> Shuttle
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some('.'.into()),
+                prefix: Some('>'.into()),
                 ..Default::default()
             },
             commands: vec![
