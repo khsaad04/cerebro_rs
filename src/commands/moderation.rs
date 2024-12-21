@@ -5,37 +5,6 @@ use poise::{
 
 use crate::{Context, Error};
 
-struct Duration {
-    amount: i64,
-    _unit: String,
-}
-
-impl TryFrom<String> for Duration {
-    type Error = i64;
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        let mut i = 0;
-        for (idx, c) in value.chars().enumerate() {
-            if !c.is_numeric() {
-                i += idx;
-                break;
-            }
-        }
-        let (amount, unit) = value.split_at(i);
-        let amount = amount.parse::<i64>().expect("Could not parse to i64");
-        let amount = match unit {
-            "s" | "sec" => amount,
-            "m" | "min" => amount * 60,
-            "h" | "hr" | "hour" => amount * 3600,
-            "d" | "day" => amount * 3600 * 24,
-            _ => 0,
-        };
-        Ok(Self {
-            amount,
-            _unit: unit.to_string(),
-        })
-    }
-}
-
 /// Kick a member
 #[poise::command(
     prefix_command,
@@ -137,6 +106,29 @@ pub async fn unban(
     Ok(())
 }
 
+fn parse_duration(duration: &str) -> Result<i64, ()> {
+    let mut i = 0;
+    for (idx, c) in duration.chars().enumerate() {
+        if !c.is_numeric() {
+            i += idx;
+            break;
+        }
+    }
+    if i == 0 {
+        return Err(());
+    }
+    let (amount, unit) = duration.split_at(i);
+    let amount = amount.parse::<i64>().expect("Could not parse to i64");
+    let amount = match unit {
+        "s" | "sec" => amount,
+        "m" | "min" => amount * 60,
+        "h" | "hr" | "hour" => amount * 3600,
+        "d" | "day" => amount * 3600 * 24,
+        _ => 0,
+    };
+    Ok(amount)
+}
+
 /// Mute/timeout a member
 #[poise::command(
     prefix_command,
@@ -157,12 +149,10 @@ pub async fn mute(
     reason: Option<String>,
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
-    let duration =
-        Duration::try_from(actual_duration.clone()).expect("Failed to convert to duration");
-    let timestamp = Timestamp::from_unix_timestamp(
-        Timestamp::unix_timestamp(&Timestamp::now()) + duration.amount,
-    )
-    .expect("Failed to convert to duration");
+    let duration = parse_duration(&actual_duration).expect("Failed to convert to duration");
+    let timestamp =
+        Timestamp::from_unix_timestamp(Timestamp::unix_timestamp(&Timestamp::now()) + duration)
+            .expect("Failed to convert to duration");
 
     member
         .disable_communication_until_datetime(&ctx, timestamp)
@@ -262,17 +252,12 @@ pub async fn slowmode(
     #[description = "The time of slowmode"] duration: Option<String>,
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
-    let duration =
-        Duration::try_from(actual_duration.clone()).expect("Failed to convert to duration");
+    let duration = parse_duration(&actual_duration).expect("Failed to convert to duration");
     ctx.channel_id()
         .edit(
             &ctx,
-            EditChannel::new().rate_limit_per_user(
-                duration
-                    .amount
-                    .try_into()
-                    .expect("Failed to convert to u16"),
-            ),
+            EditChannel::new()
+                .rate_limit_per_user(duration.try_into().expect("Failed to convert to u16")),
         )
         .await?;
     ctx.send(
