@@ -53,7 +53,7 @@ pub async fn kick(
     reason: Option<String>,
 ) -> Result<(), Error> {
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
-    member.kick_with_reason(&ctx, &reason[..]).await?;
+    member.kick_with_reason(&ctx, &reason).await?;
     ctx.send(
         CreateReply::default().embed(
             CreateEmbed::default()
@@ -88,7 +88,7 @@ pub async fn ban(
 ) -> Result<(), Error> {
     let del = delete_message_duration.unwrap_or(7);
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
-    member.ban_with_reason(&ctx, del, &reason[..]).await?;
+    member.ban_with_reason(&ctx, del, &reason).await?;
     ctx.send(
         CreateReply::default().embed(
             CreateEmbed::default()
