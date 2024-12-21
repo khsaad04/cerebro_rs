@@ -1,5 +1,4 @@
 mod commands;
-mod utils;
 
 use anyhow::Context as _;
 use poise::serenity_prelude as serenity;
@@ -39,7 +38,6 @@ async fn poise(#[shuttle_runtime::Secrets] secret_store: SecretStore) -> Shuttle
                 purge(),
                 slowmode(),
             ],
-            on_error: |error| Box::pin(utils::error::on_error(error)),
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
