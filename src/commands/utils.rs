@@ -2,9 +2,10 @@ use poise::{
     serenity_prelude::{self as serenity, CreateAttachment},
     CreateReply,
 };
+use reqwest::StatusCode;
 
 use crate::{Context, Error};
-use std::time::Instant;
+use std::{cmp::Ordering, time::Instant};
 
 /// Show the bot's latency
 #[poise::command(prefix_command, slash_command, category = "Utilities")]
@@ -77,12 +78,22 @@ pub async fn avatar(
 #[poise::command(prefix_command, slash_command, category = "Utilities")]
 pub async fn weather(
     ctx: Context<'_>,
-    #[description = "Location for the weather"] location: String,
+    #[description = "Location for the weather"]
+    #[rest = true]
+    location: String,
 ) -> Result<(), Error> {
-    let resp = reqwest::get(format!("https://wttr.in/{location}?format=4"))
-        .await?
-        .text()
-        .await?;
-    ctx.say(resp).await?;
+    let resp = reqwest::get(format!("https://wttr.in/{location}?format=4")).await?;
+    let status_code = resp.status();
+    let response: String;
+    if status_code == 404 {
+        response = format!("Location {location} not found");
+    } else if status_code == 400 {
+        response = "Are you trying to hack weather?".to_string();
+    } else if status_code.cmp(&StatusCode::from_u16(400)?) == Ordering::Greater {
+        response = format!("An error occured: {status_code}");
+    } else {
+        response = resp.text().await?;
+    }
+    ctx.say(response).await?;
     Ok(())
 }
