@@ -31,6 +31,7 @@ async fn poise(#[shuttle_runtime::Secrets] secret_store: SecretStore) -> Shuttle
                 ping(),
                 uptime(),
                 avatar(),
+                weather(),
                 kick(),
                 ban(),
                 unban(),

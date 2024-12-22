@@ -72,3 +72,17 @@ pub async fn avatar(
     .await?;
     Ok(())
 }
+
+/// Show weather
+#[poise::command(prefix_command, slash_command, category = "Utilities")]
+pub async fn weather(
+    ctx: Context<'_>,
+    #[description = "Location for the weather"] location: String,
+) -> Result<(), Error> {
+    let resp = reqwest::get(format!("https://wttr.in/{location}?format=4"))
+        .await?
+        .text()
+        .await?;
+    ctx.say(resp).await?;
+    Ok(())
+}
