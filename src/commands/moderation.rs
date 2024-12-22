@@ -1,5 +1,5 @@
 use poise::{
-    serenity_prelude::{self as serenity, Color, CreateEmbed, EditChannel, GetMessages, Timestamp},
+    serenity_prelude::{self as serenity, EditChannel, GetMessages, Timestamp},
     CreateReply,
 };
 
@@ -24,17 +24,11 @@ pub async fn kick(
 ) -> Result<(), Error> {
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
     member.kick_with_reason(&ctx, &reason).await?;
-    ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("Member Kicked")
-                .description(format!(
-                    "Successfully kicked `{}` for `{}`",
-                    member.user.name, reason
-                ))
-                .color(Color::DARK_GREEN),
-        ),
-    )
+
+    ctx.send(CreateReply::default().content(format!(
+        "Successfully kicked `{}` for `{}`",
+        member.user.name, reason
+    )))
     .await?;
     Ok(())
 }
@@ -60,17 +54,10 @@ pub async fn ban(
     let del = delete_message_duration.unwrap_or(7);
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
     member.ban_with_reason(&ctx, del, &reason).await?;
-    ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("Member Banned")
-                .description(format!(
-                    "Successfully banned `{}` for `{}`",
-                    member.user.name, reason
-                ))
-                .color(Color::DARK_GREEN),
-        ),
-    )
+    ctx.send(CreateReply::default().content(format!(
+        "Successfully banned `{}` for `{}`",
+        member.user.name, reason
+    )))
     .await?;
     Ok(())
 }
@@ -94,15 +81,8 @@ pub async fn unban(
         .expect("Could not retrieve guild_id")
         .unban(&ctx, user.id)
         .await;
-    ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("Member Unbanned")
-                .description(format!("Successfully unbanned `{}`", user.name))
-                .color(Color::DARK_GREEN),
-        ),
-    )
-    .await?;
+    ctx.send(CreateReply::default().content(format!("Successfully unbanned `{}`", user.name)))
+        .await?;
     Ok(())
 }
 
@@ -159,17 +139,10 @@ pub async fn mute(
         .await?;
 
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
-    ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("Member Muted")
-                .description(format!(
-                    "Successfully muted `{}` for `{}` because of `{}`",
-                    member.user.name, actual_duration, reason
-                ))
-                .color(Color::DARK_GREEN),
-        ),
-    )
+    ctx.send(CreateReply::default().content(format!(
+        "Successfully muted `{}` for `{}` because of `{}`",
+        member.user.name, actual_duration, reason
+    )))
     .await?;
     Ok(())
 }
@@ -190,12 +163,7 @@ pub async fn unmute(
 ) -> Result<(), Error> {
     member.enable_communication(&ctx).await?;
     ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("Member Unmuted")
-                .description(format!("Successfully unmuted `{}`", member.user.name))
-                .color(Color::DARK_GREEN),
-        ),
+        CreateReply::default().content(format!("Successfully unmuted `{}`", member.user.name)),
     )
     .await?;
     Ok(())
@@ -223,17 +191,9 @@ pub async fn purge(
     {
         message.delete(&ctx).await?;
     }
-    ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("Purged")
-                .description(format!(
-                    "Successfully purged `{}` messages from this channel",
-                    amount
-                ))
-                .color(Color::DARK_GREEN),
-        ),
-    )
+    ctx.send(CreateReply::default().content(format!(
+        "Successfully purged `{amount}` messages from this channel"
+    )))
     .await?;
     Ok(())
 }
@@ -260,17 +220,9 @@ pub async fn slowmode(
                 .rate_limit_per_user(duration.try_into().expect("Failed to convert to u16")),
         )
         .await?;
-    ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("Slowmode")
-                .description(format!(
-                    "Successfully added slowmode for `{}` in this channel",
-                    actual_duration
-                ))
-                .color(Color::DARK_GREEN),
-        ),
-    )
+    ctx.send(CreateReply::default().content(format!(
+        "Successfully added slowmode for `{actual_duration}` in this channel"
+    )))
     .await?;
     Ok(())
 }

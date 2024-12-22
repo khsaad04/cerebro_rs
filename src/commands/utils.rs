@@ -1,5 +1,5 @@
 use poise::{
-    serenity_prelude::{self as serenity, CreateEmbed},
+    serenity_prelude::{self as serenity, CreateAttachment},
     CreateReply,
 };
 
@@ -33,7 +33,7 @@ pub async fn uptime(ctx: Context<'_>) -> Result<(), Error> {
     let (hours, minutes) = div_mod(minutes, 60);
     let (days, hours) = div_mod(hours, 24);
 
-    let mut uptime_str = "Uptime: ".to_string();
+    let mut uptime_str = "Uptime:".to_string();
     if days > 0 {
         uptime_str.push_str(&format!(" {days}d"));
     }
@@ -62,59 +62,12 @@ pub async fn avatar(
     let author = ctx.author_member().await.expect("Not a member");
     let member = member.as_ref().unwrap_or(&author);
     ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("Avatar")
-                .description(format!("{}'s avatar", member.user.name))
-                .image(member.user.avatar_url().expect("No image found")),
-        ),
-    )
-    .await?;
-    Ok(())
-}
-
-/// Show the user's info
-#[poise::command(prefix_command, slash_command, category = "Utilities")]
-pub async fn userinfo(
-    ctx: Context<'_>,
-    #[description = "The user whose info you want"]
-    #[autocomplete = "poise::builtins::autocomplete_command"]
-    member: Option<serenity::Member>,
-) -> Result<(), Error> {
-    let author = ctx.author_member().await.expect("Not a member");
-    let member = member.as_ref().unwrap_or(&author);
-    let roles = member.roles(ctx).expect("No role data found");
-    let mut role_list = String::new();
-    for role in roles {
-        role_list.push_str(format!("`{}` ", &role.name).as_ref());
-    }
-    ctx.send(
-        CreateReply::default().embed(
-            CreateEmbed::default()
-                .title("User info")
-                .description(format!("{}'s user info", member.user.name))
-                .thumbnail(member.user.avatar_url().expect("No image found"))
-                .field("id", member.user.id.to_string(), true)
-                .field(
-                    "nickname",
-                    member.clone().nick.unwrap_or("none".into()),
-                    true,
-                )
-                .field(
-                    "account created",
-                    member.user.created_at().to_string(),
-                    false,
-                )
-                .field(
-                    "joined server",
-                    member
-                        .joined_at
-                        .expect("Could not retrieve joining info")
-                        .to_string(),
-                    false,
-                )
-                .field("roles", role_list, false),
-        ),
+        CreateReply::default()
+            .content(format!("`{}`'s avatar", member.user.name))
+            .attachment(
+                CreateAttachment::url(&ctx, &member.user.avatar_url().expect("No image found"))
+                    .await?,
+            ),
     )
     .await?;
     Ok(())
