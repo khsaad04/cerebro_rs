@@ -94,6 +94,7 @@ pub async fn weather(
     } else {
         response = resp.text().await?;
     }
+
     ctx.say(response).await?;
     Ok(())
 }

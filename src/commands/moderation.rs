@@ -1,7 +1,4 @@
-use poise::{
-    serenity_prelude::{self as serenity, EditChannel, GetMessages, Timestamp},
-    CreateReply,
-};
+use poise::serenity_prelude::{self as serenity, EditChannel, GetMessages, Timestamp};
 
 use crate::{Context, Error};
 
@@ -25,10 +22,10 @@ pub async fn kick(
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
     member.kick_with_reason(&ctx, &reason).await?;
 
-    ctx.send(CreateReply::default().content(format!(
+    ctx.say(format!(
         "Successfully kicked `{}` for `{}`",
         member.user.name, reason
-    )))
+    ))
     .await?;
     Ok(())
 }
@@ -46,18 +43,20 @@ pub async fn ban(
     #[description = "The member you want to ban"]
     #[autocomplete = "poise::builtins::autocomplete_command"]
     member: serenity::Member,
-    #[description = "The amount of messages to delete"] delete_message_duration: Option<u8>,
+    #[description = "The amount of days to delete messages"] ddays: Option<u8>,
     #[description = "The reason for it"]
     #[rest = true]
     reason: Option<String>,
 ) -> Result<(), Error> {
-    let del = delete_message_duration.unwrap_or(7);
     let reason = reason.unwrap_or("no reason whatsoever".to_string());
-    member.ban_with_reason(&ctx, del, &reason).await?;
-    ctx.send(CreateReply::default().content(format!(
+    member
+        .ban_with_reason(&ctx, ddays.unwrap_or(7), &reason)
+        .await?;
+
+    ctx.say(format!(
         "Successfully banned `{}` for `{}`",
         member.user.name, reason
-    )))
+    ))
     .await?;
     Ok(())
 }
@@ -76,12 +75,12 @@ pub async fn unban(
     #[autocomplete = "poise::builtins::autocomplete_command"]
     user: serenity::User,
 ) -> Result<(), Error> {
-    let _ = ctx
-        .guild_id()
+    ctx.guild_id()
         .expect("Could not retrieve guild_id")
         .unban(&ctx, user.id)
-        .await;
-    ctx.send(CreateReply::default().content(format!("Successfully unbanned `{}`", user.name)))
+        .await?;
+
+    ctx.say(format!("Successfully unbanned `{}`", user.name))
         .await?;
     Ok(())
 }
@@ -138,11 +137,10 @@ pub async fn mute(
         .disable_communication_until_datetime(&ctx, timestamp)
         .await?;
 
-    let reason = reason.unwrap_or("no reason whatsoever".to_string());
-    ctx.send(CreateReply::default().content(format!(
+    ctx.say(format!(
         "Successfully muted `{}` for `{}` because of `{}`",
         member.user.name, actual_duration, reason
-    )))
+    ))
     .await?;
     Ok(())
 }
@@ -162,10 +160,9 @@ pub async fn unmute(
     mut member: serenity::Member,
 ) -> Result<(), Error> {
     member.enable_communication(&ctx).await?;
-    ctx.send(
-        CreateReply::default().content(format!("Successfully unmuted `{}`", member.user.name)),
-    )
-    .await?;
+
+    ctx.say(format!("Successfully unmuted `{}`", member.user.name))
+        .await?;
     Ok(())
 }
 
@@ -191,9 +188,10 @@ pub async fn purge(
     {
         message.delete(&ctx).await?;
     }
-    ctx.send(CreateReply::default().content(format!(
+
+    ctx.say(format!(
         "Successfully purged `{amount}` messages from this channel"
-    )))
+    ))
     .await?;
     Ok(())
 }
@@ -220,9 +218,10 @@ pub async fn slowmode(
                 .rate_limit_per_user(duration.try_into().expect("Failed to convert to u16")),
         )
         .await?;
-    ctx.send(CreateReply::default().content(format!(
+
+    ctx.say(format!(
         "Successfully added slowmode for `{actual_duration}` in this channel"
-    )))
+    ))
     .await?;
     Ok(())
 }
