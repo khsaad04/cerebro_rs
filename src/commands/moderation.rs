@@ -85,7 +85,18 @@ pub async fn unban(
     Ok(())
 }
 
-fn parse_duration(duration: &str) -> Result<i64, ()> {
+#[derive(Debug)]
+struct InvalidDuration;
+
+impl std::fmt::Display for InvalidDuration {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "This is an invalid duration.\nExample: 1d, 4h, 49s")
+    }
+}
+
+impl std::error::Error for InvalidDuration {}
+
+fn parse_duration(duration: &str) -> Result<i64, InvalidDuration> {
     let mut i = 0;
     for (idx, c) in duration.chars().enumerate() {
         if !c.is_numeric() {
@@ -94,7 +105,7 @@ fn parse_duration(duration: &str) -> Result<i64, ()> {
         }
     }
     if i == 0 {
-        return Err(());
+        return Err(InvalidDuration);
     }
     let (amount, unit) = duration.split_at(i);
     let amount = amount.parse::<i64>().expect("Could not parse to i64");
@@ -127,12 +138,12 @@ pub async fn mute(
     #[rest = true]
     reason: Option<String>,
 ) -> Result<(), Error> {
+    let reason = reason.unwrap_or("no reason whatsoever".to_string());
     let actual_duration = duration.unwrap_or("1h".to_string());
-    let duration = parse_duration(&actual_duration).expect("Failed to convert to duration");
+    let duration = parse_duration(&actual_duration)?;
     let timestamp =
         Timestamp::from_unix_timestamp(Timestamp::unix_timestamp(&Timestamp::now()) + duration)
             .expect("Failed to convert to duration");
-
     member
         .disable_communication_until_datetime(&ctx, timestamp)
         .await?;
@@ -210,7 +221,7 @@ pub async fn slowmode(
     #[description = "The time of slowmode"] duration: Option<String>,
 ) -> Result<(), Error> {
     let actual_duration = duration.unwrap_or("1h".to_string());
-    let duration = parse_duration(&actual_duration).expect("Failed to convert to duration");
+    let duration = parse_duration(&actual_duration)?;
     ctx.channel_id()
         .edit(
             &ctx,
